@@ -1,4 +1,4 @@
-import { Target, Lightbulb, Pencil, RotateCcw } from 'lucide-react';
+import { Target, Lightbulb, Pencil, RotateCcw, Globe, Send } from 'lucide-react';
 import type { RecommendResponse } from '../types';
 import { Button } from '@/components/ui/button';
 import CarCard from './CarCard';
@@ -78,6 +78,32 @@ export default function Results({ data, onReset, onEditQuery }: ResultsProps) {
             <RotateCcw className="size-4" />
             Начать заново
           </Button>
+        </div>
+
+        {/* Footer links */}
+        <div className="text-center pb-8 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+          <p className="text-xs text-muted-foreground mb-3">Сделано в</p>
+          <div className="flex items-center justify-center gap-4">
+            <a
+              href="https://create-products.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              <Globe className="size-4" />
+              create-products.com
+            </a>
+            <span className="text-muted-foreground/40">|</span>
+            <a
+              href="https://t.me/create_products"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              <Send className="size-4" />
+              В эпоху AI
+            </a>
+          </div>
         </div>
       </div>
     </div>
