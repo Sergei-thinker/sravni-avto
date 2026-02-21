@@ -71,7 +71,7 @@ def _get_client() -> AsyncOpenAI:
 
 def _get_model() -> str:
     """Get the model name from environment or use default."""
-    return os.getenv("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-5-20250929")
+    return os.getenv("OPENROUTER_MODEL", "google/gemini-3-flash-preview")
 
 
 def _min_seats_for_passengers(passengers: str) -> int:
