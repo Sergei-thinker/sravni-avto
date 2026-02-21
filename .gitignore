@@ -1,0 +1,30 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Node
+node_modules/
+dist/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agent-generated
+generations/
+
+# Screenshots from E2E tests
+screenshots/
+
+# Parser logs
+parser/logs/
