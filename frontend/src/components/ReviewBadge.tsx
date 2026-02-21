@@ -1,20 +1,20 @@
 import { Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface ReviewBadgeProps {
   count: number;
   className?: string;
 }
 
-export default function ReviewBadge({ count, className = '' }: ReviewBadgeProps) {
+export default function ReviewBadge({ count, className }: ReviewBadgeProps) {
   const label = getOwnersLabel(count);
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] text-xs font-medium ${className}`}
-    >
-      <Users className="w-3 h-3" />
+    <Badge variant="secondary" className={cn('gap-1', className)}>
+      <Users className="size-3" />
       {count} {label}
-    </span>
+    </Badge>
   );
 }
 

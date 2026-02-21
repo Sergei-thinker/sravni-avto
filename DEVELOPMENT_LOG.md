@@ -1,5 +1,29 @@
 # Development Log — СравниАвто
 
+### 2026-02-21 - Исправление загрузки и ошибки 502 на проде
+
+#### Что сделано
+- **Loading.tsx**: Заменена циклическая анимация на асимптотический прогресс (0%→95%), добавлен отображаемый процент
+- **llm.py**: Добавлен скоринг авто по приоритетам/целям пользователя, лимит 10 машин для LLM (было 27-37)
+- **llm.py**: Сокращён системный промпт (3 рекомендации вместо 5, лаконичные ответы)
+- **llm.py**: Добавлен retry (до 2 попыток) при обрезанном JSON + проверка finish_reason
+- **client.ts**: Добавлен автоматический retry при "Load failed" / "Failed to fetch" (мобильные браузеры)
+- Время ответа: 65с → 21с (вписывается в таймаут Telegram in-app browser)
+
+#### Изменённые файлы
+- `frontend/src/components/Loading.tsx` — линейный прогресс с процентом
+- `frontend/src/api/client.ts` — retry при сетевых ошибках
+- `backend/llm.py` — скоринг, лимит машин, лаконичный промпт, retry
+
+#### Тестирование
+- [x] Python syntax check
+- [x] TypeScript build
+- [x] Тест на проде: 3 рекомендации за 21с
+- [ ] Визуальная проверка загрузки в Telegram-браузере
+
+#### Статус
+✅ Завершено — задеплоено на прод
+
 ### 2026-02-21 - Инициализация проекта и параллельная сборка
 
 #### Что сделано
@@ -318,3 +342,81 @@ car.create-products.com (HTTPS)
 
 #### Статус
 ⏳ В процессе — код готов, сборка успешна, ожидает ручного тестирования и деплоя
+
+### 2026-02-21 - Интеграция shadcn/ui — консистентная дизайн-система
+
+#### Что сделано
+- Исследованы 9 UI-библиотек (shadcn/ui, Headless UI, daisyUI 5, Ark UI, HeroUI, Mantine, MUI, Park UI, Radix)
+- Выбран **shadcn/ui** — полная поддержка React 19 + Tailwind CSS 4 (без tailwind.config.js), copy-paste подход
+- Установлены зависимости: class-variance-authority, clsx, tailwind-merge, tw-animate-css, radix-ui
+- Настроена инфраструктура:
+  - Path alias `@/*` в tsconfig.json, tsconfig.app.json, vite.config.ts
+  - `cn()` утилита в src/lib/utils.ts
+  - `components.json` для shadcn CLI (rsc: false, Vite SPA)
+  - Полная реструктуризация index.css: `@theme inline` с OKLCH токенами, маппинг бренд-цветов
+- Добавлены shadcn-компоненты через CLI:
+  - Базовые: Button (+ кастомный вариант `gradient`), Card, Badge (+ варианты `success`, `warning`, `match`)
+  - Формы: Progress, Slider, Toggle, ToggleGroup, Input, Tooltip
+- Мигрированы ВСЕ 12 компонентов приложения + App.tsx:
+  - ReviewBadge → Badge (secondary)
+  - ProConItem → cn() + семантические цвета (success/destructive)
+  - OwnerQuote → cn() + border-primary, bg-muted
+  - Landing → Button (gradient), Card, CardContent
+  - Results → Button (outline, gradient), text-primary
+  - CarCard → Card, CardContent, Badge, Button (outline, gradient, asChild)
+  - Loading → Progress, bg-primary, text-primary-foreground
+  - Quiz → Button (outline, default, gradient), Card, CardContent, cn()
+  - Chat → Button (gradient, ghost), Input, cn()
+  - QuizQuestion → Button (outline), cn() для всех 4 типов вопросов
+  - App → Button (gradient), bg-background, text-foreground
+- Все `var(--color-*)` заменены на семантические классы: text-primary, bg-secondary, text-muted-foreground и т.д.
+- Все `w-N h-N` заменены на `size-N` (Tailwind CSS 4 shorthand)
+
+#### Изменённые файлы
+- `frontend/package.json` — +5 новых зависимостей
+- `frontend/tsconfig.json` — +path alias @/*
+- `frontend/tsconfig.app.json` — +path alias @/*
+- `frontend/vite.config.ts` — +path resolve alias
+- `frontend/components.json` — новый файл, shadcn CLI конфиг
+- `frontend/src/lib/utils.ts` — новый файл, cn() утилита
+- `frontend/src/index.css` — полная реструктуризация: @theme inline, OKLCH токены, сохранены анимации
+- `frontend/src/components/ui/button.tsx` — shadcn + кастомный gradient вариант
+- `frontend/src/components/ui/card.tsx` — shadcn (без изменений)
+- `frontend/src/components/ui/badge.tsx` — shadcn + success/warning/match варианты
+- `frontend/src/components/ui/progress.tsx` — shadcn (без изменений)
+- `frontend/src/components/ui/slider.tsx` — shadcn (без изменений)
+- `frontend/src/components/ui/toggle.tsx` — shadcn (без изменений)
+- `frontend/src/components/ui/toggle-group.tsx` — shadcn (без изменений)
+- `frontend/src/components/ui/input.tsx` — shadcn (без изменений)
+- `frontend/src/components/ui/tooltip.tsx` — shadcn (без изменений)
+- `frontend/src/App.tsx` — Button, bg-background, семантические цвета
+- `frontend/src/components/ReviewBadge.tsx` — Badge component
+- `frontend/src/components/ProConItem.tsx` — cn(), семантические цвета
+- `frontend/src/components/OwnerQuote.tsx` — cn(), семантические цвета
+- `frontend/src/components/Landing.tsx` — Button (gradient), Card
+- `frontend/src/components/Results.tsx` — Button (outline), семантические цвета
+- `frontend/src/components/CarCard.tsx` — Card, Badge, Button
+- `frontend/src/components/Loading.tsx` — Progress, семантические цвета
+- `frontend/src/components/Quiz.tsx` — Button (outline/default/gradient), Card
+- `frontend/src/components/Chat.tsx` — Button (gradient/ghost), Input
+- `frontend/src/components/QuizQuestion.tsx` — Button (outline), cn()
+
+#### Размер сборки
+- До: 251KB JS (75KB gz) + 34KB CSS (7KB gz)
+- После: 285KB JS (87KB gz) + 49KB CSS (9KB gz)
+- Прирост: +34KB JS (+12KB gz), +15KB CSS (+2KB gz)
+
+#### Тестирование
+- [x] TypeScript компиляция без ошибок
+- [x] Vite build успешен
+- [ ] Ручное тестирование в браузере (npm run dev)
+- [ ] Деплой на VPS
+
+#### Следующий шаг
+- Запустить `cd frontend && npm run dev` и проверить все экраны визуально
+- Проверить соответствие цветов (OKLCH → hex может дать небольшие отклонения)
+- При необходимости подкрутить OKLCH значения в index.css
+- Собрать и задеплоить: `VITE_API_URL="" npm run build` → scp на VPS
+
+#### Статус
+⏳ В процессе — сборка ОК, ожидает ручного тестирования и деплоя

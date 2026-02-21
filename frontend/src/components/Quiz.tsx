@@ -1,5 +1,8 @@
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { questions } from '../data/questions';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import QuizQuestion from './QuizQuestion';
 
 interface QuizProps {
@@ -33,20 +36,17 @@ export default function Quiz({
     <div className="min-h-screen flex flex-col px-4 py-6">
       {/* Progress bar - segmented */}
       <div className="max-w-lg w-full mx-auto mb-6">
-        <span className="text-xs text-slate-400 font-medium block mb-3">
+        <span className="text-xs text-muted-foreground font-medium block mb-3">
           Вопрос {currentStep + 1} из {totalSteps}
         </span>
         <div className="flex gap-1.5">
           {Array.from({ length: totalSteps }).map((_, i) => (
             <div
               key={i}
-              className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                i < currentStep
-                  ? 'bg-[var(--color-primary)]'
-                  : i === currentStep
-                    ? 'bg-[var(--color-primary)]'
-                    : 'bg-slate-200'
-              }`}
+              className={cn(
+                'h-1.5 flex-1 rounded-full transition-all duration-500',
+                i <= currentStep ? 'bg-primary' : 'bg-muted'
+              )}
             />
           ))}
         </div>
@@ -55,56 +55,52 @@ export default function Quiz({
       {/* Question in card */}
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-lg w-full" key={currentStep}>
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8">
-            <QuizQuestion
-              question={question}
-              value={answers[question.id]}
-              budgetFrom={answers.budget_from as number}
-              budgetTo={answers.budget_to as number}
-              isNewAcceptable={answers.is_new_acceptable as boolean}
-              isUsedAcceptable={answers.is_used_acceptable as boolean}
-              onChange={onSetAnswer}
-            />
-          </div>
+          <Card className="rounded-3xl p-6 sm:p-8 gap-0">
+            <CardContent className="p-0">
+              <QuizQuestion
+                question={question}
+                value={answers[question.id]}
+                budgetFrom={answers.budget_from as number}
+                budgetTo={answers.budget_to as number}
+                isNewAcceptable={answers.is_new_acceptable as boolean}
+                isUsedAcceptable={answers.is_used_acceptable as boolean}
+                onChange={onSetAnswer}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       {/* Navigation buttons */}
       <div className="max-w-lg w-full mx-auto flex gap-3 pb-4 pt-6">
         {currentStep > 0 && (
-          <button
+          <Button
+            variant="outline"
             onClick={onPrev}
-            className="inline-flex items-center gap-1.5 px-5 py-3 rounded-2xl border-2 border-slate-200 text-slate-600 font-medium text-sm hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 cursor-pointer"
+            className="rounded-2xl"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="size-4" />
             Назад
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           onClick={isLastStep && isComplete ? onSubmit : onNext}
           disabled={!stepValid}
-          className={`
-            flex-1 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 cursor-pointer inline-flex items-center justify-center gap-2
-            ${stepValid
-              ? isLastStep
-                ? 'bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-gradient)] text-white hover:shadow-lg shadow-sm'
-                : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)] shadow-sm hover:shadow-md'
-              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-            }
-          `}
+          variant={isLastStep ? 'gradient' : 'default'}
+          className="flex-1 py-3 rounded-2xl font-semibold"
         >
           {isLastStep ? (
             <>
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="size-4" />
               Получить рекомендации
             </>
           ) : (
             <>
               Далее
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="size-4" />
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

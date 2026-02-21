@@ -1,5 +1,6 @@
 import { Target, Lightbulb, Pencil, RotateCcw } from 'lucide-react';
 import type { RecommendResponse } from '../types';
+import { Button } from '@/components/ui/button';
 import CarCard from './CarCard';
 
 interface ResultsProps {
@@ -16,16 +17,16 @@ export default function Results({ data, onReset, onEditQuery }: ResultsProps) {
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in-up">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-gradient)] flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Target className="w-8 h-8 text-white" />
+          <div className="size-16 rounded-2xl bg-gradient-to-br from-primary to-[var(--color-primary-gradient)] flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Target className="size-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-2">
             Ваши рекомендации
           </h1>
           {total_reviews_analyzed > 0 && (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Проанализировано{' '}
-              <span className="font-semibold text-[var(--color-primary)]">
+              <span className="font-semibold text-primary">
                 {total_reviews_analyzed.toLocaleString('ru-RU')}
               </span>{' '}
               отзывов владельцев
@@ -35,17 +36,17 @@ export default function Results({ data, onReset, onEditQuery }: ResultsProps) {
 
         {/* General advice */}
         {general_advice && (
-          <div className="bg-[var(--color-primary-light)] border-l-4 border-[var(--color-primary)] rounded-r-2xl px-5 py-4 mb-6 animate-fade-in-up">
+          <div className="bg-[var(--color-primary-light)] border-l-4 border-primary rounded-r-2xl px-5 py-4 mb-6 animate-fade-in-up">
             <div className="flex gap-3">
-              <Lightbulb className="w-5 h-5 text-[var(--color-primary)] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-slate-700 leading-relaxed">{general_advice}</p>
+              <Lightbulb className="size-5 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-foreground/80 leading-relaxed">{general_advice}</p>
             </div>
           </div>
         )}
 
         {/* Section header */}
         <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
             Топ рекомендации
           </h2>
         </div>
@@ -60,21 +61,23 @@ export default function Results({ data, onReset, onEditQuery }: ResultsProps) {
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pb-8 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           {onEditQuery && (
-            <button
+            <Button
+              variant="outline"
               onClick={onEditQuery}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold text-sm hover:bg-[var(--color-primary-light)] transition-all duration-200 cursor-pointer"
+              className="flex-1 py-3 rounded-2xl border-2 border-primary text-primary hover:bg-[var(--color-primary-light)]"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil className="size-4" />
               Изменить запрос
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="outline"
             onClick={onReset}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-medium text-sm hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 cursor-pointer"
+            className="py-3 rounded-2xl"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="size-4" />
             Начать заново
-          </button>
+          </Button>
         </div>
       </div>
     </div>

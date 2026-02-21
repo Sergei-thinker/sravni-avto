@@ -38,42 +38,18 @@ PROVEN_CHINESE_BRANDS = {"Haval", "Chery", "Geely", "Changan"}
 
 # ── System Prompt ───────────────────────────────────────────────────────────
 
-SYSTEM_PROMPT = """Ты -- эксперт-автоконсультант для российского рынка. Твоя задача -- помочь пользователю выбрать автомобиль на основе его ответов на анкету и реальных отзывов владельцев.
+SYSTEM_PROMPT = """Ты -- эксперт-автоконсультант для российского рынка.
 
 ПРАВИЛА:
-1. Рекомендуй только автомобили из предоставленного списка (filtered_cars). Не придумывай автомобили.
-2. Каждая рекомендация должна быть основана на реальных характеристиках автомобиля и отзывах владельцев (если доступны).
-3. Отвечай ТОЛЬКО на русском языке.
-4. Будь честным -- указывай как плюсы, так и минусы каждого автомобиля.
-5. Учитывай приоритеты пользователя (priorities) при ранжировании -- первый приоритет самый важный.
-6. Рекомендуй от 3 до 5 автомобилей, отсортированных по степени соответствия (match_percent).
-7. match_percent должен отражать реальное соответствие запросу: 90-100% = идеальное попадание, 70-89% = хорошо подходит, 50-69% = компромиссный вариант.
-8. В поле why_fits объясни простым языком, почему эта машина подходит именно этому пользователю.
-9. В поле watch_out укажи, на что обратить внимание при покупке (типичные проблемы, нюансы).
-10. В general_advice дай общий совет по выбору, исходя из ситуации пользователя.
-11. Если есть отзывы владельцев -- используй их для формирования pros, cons и owner_quote.
-12. Если отзывов нет -- сформируй pros и cons на основе характеристик автомобиля и общеизвестной информации, но установи owners_count = 0.
-13. owner_quote -- реальная цитата из отзыва (если есть), или null (если отзывов нет).
+1. Рекомендуй ТОЛЬКО авто из предоставленного списка. Не придумывай.
+2. Отвечай на русском.
+3. Учитывай приоритеты пользователя при ранжировании.
+4. Рекомендуй ровно 3 автомобиля.
+5. Будь ЛАКОНИЧЕН: why_fits — 1-2 предложения, pros/cons — ровно 3 штуки каждый (короткие фразы), watch_out — 1 предложение, general_advice — 2-3 предложения.
+6. Если отзывов нет — owners_count = 0, owner_quote = null.
 
-ФОРМАТ ОТВЕТА (строго JSON):
-{
-  "recommendations": [
-    {
-      "car_id": "string (id из базы)",
-      "match_percent": number (0-100),
-      "why_fits": "string",
-      "pros": [{"text": "string", "owners_count": number}],
-      "cons": [{"text": "string", "owners_count": number}],
-      "owner_quote": {"text": "string", "experience": "string", "source_url": "string"} | null,
-      "watch_out": "string",
-      "total_reviews": number
-    }
-  ],
-  "total_reviews_analyzed": number,
-  "general_advice": "string"
-}
-
-Отвечай ТОЛЬКО валидным JSON. Никакого текста до или после JSON."""
+ФОРМАТ (строго JSON, без markdown):
+{"recommendations":[{"car_id":"id","match_percent":85,"why_fits":"...","pros":[{"text":"...","owners_count":0}],"cons":[{"text":"...","owners_count":0}],"owner_quote":null,"watch_out":"...","total_reviews":0}],"total_reviews_analyzed":0,"general_advice":"..."}"""
 
 
 # ── Helper Functions ────────────────────────────────────────────────────────
@@ -104,6 +80,58 @@ def _min_seats_for_passengers(passengers: str) -> int:
     return mapping.get(passengers, 5)
 
 
+def _score_car(car: dict, answers: QuizAnswers) -> float:
+    """Score a car based on how well it matches user priorities and purposes."""
+    score = 0.0
+
+    # Priority scoring: first priority = 3 points, second = 2, third = 1
+    priority_to_field = {
+        "reliability": "reliability_score",
+        "comfort": "comfort_score",
+        "safety": "safety_score",
+        "fuel_economy": "value_score",
+        "looks": "comfort_score",
+        "dynamics": "power_hp",
+    }
+    for i, priority in enumerate(answers.priorities):
+        weight = max(1, len(answers.priorities) - i)
+        field = priority_to_field.get(priority)
+        if not field:
+            continue
+        val = car.get(field, 5)
+        if field == "power_hp":
+            # Normalize power to 0-10 scale
+            val = min(10, val / 30)
+        score += val * weight
+
+    # Purpose match: bonus for matching best_for tags
+    purpose_to_tag = {
+        "city": "город",
+        "highway": "трасса",
+        "family": "семья",
+        "first_car": "первая машина",
+        "offroad": "бездорожье",
+        "work": "работа",
+    }
+    best_for = car.get("best_for", [])
+    for purpose in answers.purposes:
+        tag = purpose_to_tag.get(purpose, purpose)
+        if tag in best_for:
+            score += 5
+
+    # Budget fit: prefer cars whose price is well within budget (not edge cases)
+    car_mid = (car.get("price_from", 0) + car.get("price_to", 0)) / 2
+    budget_mid = (answers.budget_from + answers.budget_to) / 2
+    budget_range = max(1, answers.budget_to - answers.budget_from)
+    budget_fit = 1 - min(1, abs(car_mid - budget_mid) / budget_range)
+    score += budget_fit * 5
+
+    return score
+
+
+MAX_CARS_FOR_LLM = 10
+
+
 def filter_cars(answers: QuizAnswers, cars_database: list[dict]) -> list[dict]:
     """
     Pre-filter cars from the database based on quiz answers.
@@ -113,6 +141,7 @@ def filter_cars(answers: QuizAnswers, cars_database: list[dict]) -> list[dict]:
     - New/used preference
     - Minimum seats based on passengers
     - Chinese brand preference
+    - Scored and limited to top MAX_CARS_FOR_LLM candidates
     """
     filtered = []
     min_seats = _min_seats_for_passengers(answers.passengers)
@@ -151,6 +180,13 @@ def filter_cars(answers: QuizAnswers, cars_database: list[dict]) -> list[dict]:
         len(cars_database),
         len(filtered),
     )
+
+    # Score and limit to top candidates to keep LLM prompt compact and fast
+    if len(filtered) > MAX_CARS_FOR_LLM:
+        scored = sorted(filtered, key=lambda c: _score_car(c, answers), reverse=True)
+        filtered = scored[:MAX_CARS_FOR_LLM]
+        logger.info("Scored and limited to top %d cars for LLM", MAX_CARS_FOR_LLM)
+
     return filtered
 
 
@@ -378,17 +414,43 @@ async def get_recommendations(
 
     logger.info("Sending recommendation request to %s (%d cars)", model, len(filtered_cars))
 
-    response = await client.chat.completions.create(
-        model=model,
-        max_tokens=4096,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
+    # Retry up to 2 times if LLM response is truncated (invalid JSON)
+    max_attempts = 2
+    last_error = None
+    for attempt in range(1, max_attempts + 1):
+        response = await client.chat.completions.create(
+            model=model,
+            max_tokens=4096,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
 
-    raw_text = response.choices[0].message.content
-    parsed = _parse_recommendation_response(raw_text)
+        raw_text = response.choices[0].message.content
+        finish_reason = response.choices[0].finish_reason
+
+        if finish_reason == "length":
+            logger.warning(
+                "LLM response truncated (finish_reason=length), attempt %d/%d",
+                attempt, max_attempts,
+            )
+            last_error = ValueError("LLM response was truncated (max_tokens exceeded)")
+            if attempt < max_attempts:
+                continue
+            raise last_error
+
+        try:
+            parsed = _parse_recommendation_response(raw_text)
+            break
+        except ValueError as e:
+            logger.warning("Failed to parse LLM JSON, attempt %d/%d: %s", attempt, max_attempts, e)
+            last_error = e
+            if attempt < max_attempts:
+                continue
+            raise
+    else:
+        raise last_error or ValueError("Failed to get valid response from LLM")
 
     recommendations = [
         _dict_to_recommendation(r)

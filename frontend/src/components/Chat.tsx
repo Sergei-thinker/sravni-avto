@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import type { ChatMessage, QuizAnswers, CarRecommendation } from '../types';
 import { sendChatMessage } from '../api/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface ChatProps {
   answers: QuizAnswers;
@@ -76,43 +79,47 @@ export default function Chat({ answers, recommendations }: ChatProps) {
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <button
+        <Button
+          variant="gradient"
+          size="icon"
           onClick={() => {
             setIsOpen(true);
             setTimeout(() => inputRef.current?.focus(), 100);
           }}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-gradient)] text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95"
+          className="size-14 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
         >
-          <MessageCircle className="w-6 h-6" />
-        </button>
+          <MessageCircle className="size-6" />
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[340px] sm:w-[380px] max-h-[500px] bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden">
+    <div className="fixed bottom-6 right-6 z-50 w-[340px] sm:w-[380px] max-h-[500px] bg-card rounded-2xl shadow-xl border border-border flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-gradient)] text-white">
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary to-[var(--color-primary-gradient)] text-primary-foreground">
         <span className="font-semibold text-sm">Уточните подбор</span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon-xs"
           onClick={() => setIsOpen(false)}
-          className="p-1 hover:bg-white/20 rounded-lg transition-all cursor-pointer"
+          className="hover:bg-white/20 text-primary-foreground"
         >
-          <X className="w-4 h-4" />
-        </button>
+          <X className="size-4" />
+        </Button>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[200px] max-h-[340px]">
         {messages.length === 0 && (
           <div className="text-center py-4">
-            <p className="text-sm text-slate-500 mb-3">Задайте уточняющий вопрос:</p>
+            <p className="text-sm text-muted-foreground mb-3">Задайте уточняющий вопрос:</p>
             <div className="space-y-2">
               {SUGGESTIONS.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => handleSend(suggestion)}
-                  className="block w-full text-left text-sm px-3 py-2 rounded-xl bg-slate-50 text-slate-600 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-all cursor-pointer"
+                  className="block w-full text-left text-sm px-3 py-2 rounded-xl bg-muted text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-primary transition-all cursor-pointer"
                 >
                   {suggestion}
                 </button>
@@ -124,14 +131,15 @@ export default function Chat({ answers, recommendations }: ChatProps) {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}
           >
             <div
-              className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+              className={cn(
+                'max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed',
                 msg.role === 'user'
-                  ? 'bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-gradient)] text-white rounded-br-md'
-                  : 'bg-slate-100 text-slate-800 rounded-bl-md'
-              }`}
+                  ? 'bg-gradient-to-r from-primary to-[var(--color-primary-gradient)] text-primary-foreground rounded-br-md'
+                  : 'bg-muted text-foreground rounded-bl-md'
+              )}
             >
               {msg.text}
             </div>
@@ -140,11 +148,11 @@ export default function Chat({ answers, recommendations }: ChatProps) {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-slate-100 px-4 py-2 rounded-2xl rounded-bl-md">
+            <div className="bg-muted px-4 py-2 rounded-2xl rounded-bl-md">
               <div className="flex gap-1">
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                <span className="size-2 bg-muted-foreground rounded-full animate-bounce" />
+                <span className="size-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                <span className="size-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
               </div>
             </div>
           </div>
@@ -154,7 +162,7 @@ export default function Chat({ answers, recommendations }: ChatProps) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-slate-100 px-3 py-2">
+      <div className="border-t border-border px-3 py-2">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -162,22 +170,24 @@ export default function Chat({ answers, recommendations }: ChatProps) {
           }}
           className="flex gap-2"
         >
-          <input
+          <Input
             ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Задайте вопрос..."
-            className="flex-1 px-3 py-2 rounded-xl bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 transition-all"
+            className="flex-1 rounded-xl bg-muted border-none"
             disabled={isLoading}
           />
-          <button
+          <Button
             type="submit"
+            variant="gradient"
+            size="icon"
             disabled={!input.trim() || isLoading}
-            className="px-3 py-2 rounded-xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-gradient)] text-white disabled:opacity-40 hover:shadow-md transition-all cursor-pointer disabled:cursor-not-allowed"
+            className="rounded-xl"
           >
-            <Send className="w-4 h-4" />
-          </button>
+            <Send className="size-4" />
+          </Button>
         </form>
       </div>
     </div>

@@ -7,6 +7,8 @@ import {
   CircleCheck, Search, CircleX, Check,
 } from 'lucide-react';
 import type { Question } from '../data/questions';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface QuizQuestionProps {
   question: Question;
@@ -30,39 +32,32 @@ const BUDGET_MARKS = [
   { value: 8_000_000, label: '8+ млн' },
 ];
 
-// Map option values to lucide-react icons
 const OPTION_ICONS: Record<string, React.ReactNode> = {
-  // purposes
-  city: <Building2 className="w-5 h-5" />,
-  highway: <Route className="w-5 h-5" />,
-  family: <Users className="w-5 h-5" />,
-  work: <Briefcase className="w-5 h-5" />,
-  first_car: <GraduationCap className="w-5 h-5" />,
-  offroad: <Mountain className="w-5 h-5" />,
-  // priorities
-  fuel_economy: <Fuel className="w-5 h-5" />,
-  reliability: <Wrench className="w-5 h-5" />,
-  comfort: <Sofa className="w-5 h-5" />,
-  safety: <Shield className="w-5 h-5" />,
-  looks: <Sparkles className="w-5 h-5" />,
-  dynamics: <Gauge className="w-5 h-5" />,
-  // passengers
-  '1-2': <Car className="w-5 h-5" />,
-  '3-4': <Users className="w-5 h-5" />,
-  '5+': <Users className="w-5 h-5" />,
-  // experience
-  none: <ClipboardList className="w-5 h-5" />,
-  junior: <ShieldAlert className="w-5 h-5" />,
-  mid: <Car className="w-5 h-5" />,
-  senior: <Trophy className="w-5 h-5" />,
-  // city_size
-  big: <Landmark className="w-5 h-5" />,
-  medium: <Home className="w-5 h-5" />,
-  small: <TreePine className="w-5 h-5" />,
-  // chinese_ok
-  yes: <CircleCheck className="w-5 h-5" />,
-  proven: <Search className="w-5 h-5" />,
-  no: <CircleX className="w-5 h-5" />,
+  city: <Building2 className="size-5" />,
+  highway: <Route className="size-5" />,
+  family: <Users className="size-5" />,
+  work: <Briefcase className="size-5" />,
+  first_car: <GraduationCap className="size-5" />,
+  offroad: <Mountain className="size-5" />,
+  fuel_economy: <Fuel className="size-5" />,
+  reliability: <Wrench className="size-5" />,
+  comfort: <Sofa className="size-5" />,
+  safety: <Shield className="size-5" />,
+  looks: <Sparkles className="size-5" />,
+  dynamics: <Gauge className="size-5" />,
+  '1-2': <Car className="size-5" />,
+  '3-4': <Users className="size-5" />,
+  '5+': <Users className="size-5" />,
+  none: <ClipboardList className="size-5" />,
+  junior: <ShieldAlert className="size-5" />,
+  mid: <Car className="size-5" />,
+  senior: <Trophy className="size-5" />,
+  big: <Landmark className="size-5" />,
+  medium: <Home className="size-5" />,
+  small: <TreePine className="size-5" />,
+  yes: <CircleCheck className="size-5" />,
+  proven: <Search className="size-5" />,
+  no: <CircleX className="size-5" />,
 };
 
 function formatBudget(value: number): string {
@@ -85,11 +80,11 @@ export default function QuizQuestion({
 }: QuizQuestionProps) {
   return (
     <div className="animate-fade-in-up">
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
         {question.title}
       </h2>
       {question.subtitle && (
-        <p className="text-sm text-slate-500 mb-6">{question.subtitle}</p>
+        <p className="text-sm text-muted-foreground mb-6">{question.subtitle}</p>
       )}
 
       {question.type === 'budget' && (
@@ -153,16 +148,16 @@ function BudgetQuestion({
   return (
     <div className="space-y-6">
       {/* Budget display */}
-      <div className="text-center py-3 px-4 bg-[var(--color-primary-light)] rounded-2xl">
-        <span className="text-lg font-bold text-[var(--color-primary)]">
+      <div className="text-center py-3 px-4 bg-secondary rounded-2xl">
+        <span className="text-lg font-bold text-primary">
           {formatBudget(budgetFrom)} — {formatBudget(budgetTo)} руб.
         </span>
       </div>
 
       {/* From slider */}
       <div>
-        <label className="text-sm font-medium text-slate-600 mb-2 block">
-          От: <span className="text-[var(--color-primary)] font-bold">{formatBudget(budgetFrom)}</span>
+        <label className="text-sm font-medium text-muted-foreground mb-2 block">
+          От: <span className="text-primary font-bold">{formatBudget(budgetFrom)}</span>
         </label>
         <input
           type="range"
@@ -179,7 +174,7 @@ function BudgetQuestion({
           }}
           className="w-full"
         />
-        <div className="flex justify-between text-[10px] text-slate-400 mt-1 px-0.5">
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-1 px-0.5">
           {BUDGET_MARKS.map((m) => (
             <span key={m.value}>{m.label}</span>
           ))}
@@ -188,8 +183,8 @@ function BudgetQuestion({
 
       {/* To slider */}
       <div>
-        <label className="text-sm font-medium text-slate-600 mb-2 block">
-          До: <span className="text-[var(--color-primary)] font-bold">{formatBudget(budgetTo)}</span>
+        <label className="text-sm font-medium text-muted-foreground mb-2 block">
+          До: <span className="text-primary font-bold">{formatBudget(budgetTo)}</span>
         </label>
         <input
           type="range"
@@ -210,30 +205,34 @@ function BudgetQuestion({
 
       {/* New/Used pill buttons */}
       <div className="flex gap-3">
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={() => onChange('is_new_acceptable', !isNewAcceptable)}
-          className={`flex-1 py-3 px-4 rounded-2xl border-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
+          className={cn(
+            'flex-1 py-3 rounded-2xl border-2 transition-all',
             isNewAcceptable
-              ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-              : 'border-slate-200 text-slate-400 hover:border-slate-300'
-          }`}
+              ? 'border-primary bg-secondary text-primary'
+              : 'border-border text-muted-foreground hover:border-muted-foreground'
+          )}
         >
-          {isNewAcceptable && <Check className="w-4 h-4 inline mr-1.5 -mt-0.5" />}
+          {isNewAcceptable && <Check className="size-4" />}
           Новые
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
           onClick={() => onChange('is_used_acceptable', !isUsedAcceptable)}
-          className={`flex-1 py-3 px-4 rounded-2xl border-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
+          className={cn(
+            'flex-1 py-3 rounded-2xl border-2 transition-all',
             isUsedAcceptable
-              ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-              : 'border-slate-200 text-slate-400 hover:border-slate-300'
-          }`}
+              ? 'border-primary bg-secondary text-primary'
+              : 'border-border text-muted-foreground hover:border-muted-foreground'
+          )}
         >
-          {isUsedAcceptable && <Check className="w-4 h-4 inline mr-1.5 -mt-0.5" />}
+          {isUsedAcceptable && <Check className="size-4" />}
           С пробегом
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -268,23 +267,22 @@ function MultiSelectQuestion({
           <button
             key={option.value}
             onClick={() => toggle(option.value)}
-            className={`
-              relative flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer
-              ${isSelected
-                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] shadow-sm'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-              }
-            `}
+            className={cn(
+              'relative flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer',
+              isSelected
+                ? 'border-primary bg-secondary shadow-sm'
+                : 'border-border bg-card hover:border-muted-foreground hover:shadow-sm'
+            )}
           >
-            <span className={`flex-shrink-0 ${isSelected ? 'text-[var(--color-primary)]' : 'text-slate-400'}`}>
+            <span className={cn('flex-shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')}>
               {icon || <span className="text-xl">{option.icon}</span>}
             </span>
-            <span className={`text-sm font-medium ${isSelected ? 'text-[var(--color-primary)]' : 'text-slate-700'}`}>
+            <span className={cn('text-sm font-medium', isSelected ? 'text-primary' : 'text-foreground')}>
               {option.label}
             </span>
             {isSelected && (
               <div className="absolute top-2 right-2">
-                <Check className="w-4 h-4 text-[var(--color-primary)]" />
+                <Check className="size-4 text-primary" />
               </div>
             )}
           </button>
@@ -316,27 +314,25 @@ function SingleSelectQuestion({
           <button
             key={option.value}
             onClick={() => onChange(questionId, option.value)}
-            className={`
-              w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer
-              ${isSelected
-                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] shadow-sm'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-              }
-            `}
+            className={cn(
+              'w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer',
+              isSelected
+                ? 'border-primary bg-secondary shadow-sm'
+                : 'border-border bg-card hover:border-muted-foreground hover:shadow-sm'
+            )}
           >
-            <span className={`flex-shrink-0 ${isSelected ? 'text-[var(--color-primary)]' : 'text-slate-400'}`}>
+            <span className={cn('flex-shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')}>
               {icon || <span className="text-xl">{option.icon}</span>}
             </span>
-            <span className={`text-sm font-medium ${isSelected ? 'text-[var(--color-primary)]' : 'text-slate-700'}`}>
+            <span className={cn('text-sm font-medium', isSelected ? 'text-primary' : 'text-foreground')}>
               {option.label}
             </span>
-            {isSelected && (
-              <div className="ml-auto flex-shrink-0 w-6 h-6 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
-                <Check className="w-3.5 h-3.5 text-white" />
+            {isSelected ? (
+              <div className="ml-auto flex-shrink-0 size-6 rounded-full bg-primary flex items-center justify-center">
+                <Check className="size-3.5 text-primary-foreground" />
               </div>
-            )}
-            {!isSelected && (
-              <div className="ml-auto flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-200" />
+            ) : (
+              <div className="ml-auto flex-shrink-0 size-6 rounded-full border-2 border-border" />
             )}
           </button>
         );
@@ -382,31 +378,30 @@ function RankingQuestion({
           <button
             key={option.value}
             onClick={() => handleClick(option.value)}
-            className={`
-              w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer
-              ${isRanked
-                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] shadow-sm'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-              }
-            `}
+            className={cn(
+              'w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer',
+              isRanked
+                ? 'border-primary bg-secondary shadow-sm'
+                : 'border-border bg-card hover:border-muted-foreground hover:shadow-sm'
+            )}
           >
             {isRanked ? (
-              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-gradient)] text-white flex items-center justify-center text-sm font-bold shadow-sm">
+              <span className="flex-shrink-0 size-7 rounded-full bg-gradient-to-br from-primary to-[var(--color-primary-gradient)] text-primary-foreground flex items-center justify-center text-sm font-bold shadow-sm">
                 {rankIndex + 1}
               </span>
             ) : (
-              <span className="flex-shrink-0 w-7 text-center text-slate-400">
+              <span className="flex-shrink-0 w-7 text-center text-muted-foreground">
                 {icon || <span className="text-xl">{option.icon}</span>}
               </span>
             )}
-            <span className={`text-sm font-medium ${isRanked ? 'text-[var(--color-primary)]' : 'text-slate-700'}`}>
+            <span className={cn('text-sm font-medium', isRanked ? 'text-primary' : 'text-foreground')}>
               {option.label}
             </span>
           </button>
         );
       })}
       {ranked.length > 0 && (
-        <p className="text-xs text-slate-400 text-center mt-2">
+        <p className="text-xs text-muted-foreground text-center mt-2">
           Нажмите на выбранный пункт, чтобы отменить выбор
         </p>
       )}

@@ -1,4 +1,5 @@
 import { Plus, Minus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import ReviewBadge from './ReviewBadge';
 
 interface ProConItemProps {
@@ -12,12 +13,13 @@ export default function ProConItem({ type, text, ownersCount }: ProConItemProps)
 
   return (
     <div className="flex items-start gap-2.5 py-1.5">
-      <div className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center ${
-        isPro ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'
-      }`}>
-        {isPro ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+      <div className={cn(
+        'flex-shrink-0 mt-0.5 size-5 rounded-full flex items-center justify-center',
+        isPro ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
+      )}>
+        {isPro ? <Plus className="size-3" /> : <Minus className="size-3" />}
       </div>
-      <span className="text-sm text-slate-700 flex-1">{text}</span>
+      <span className="text-sm text-muted-foreground flex-1">{text}</span>
       {ownersCount > 0 && <ReviewBadge count={ownersCount} />}
     </div>
   );
